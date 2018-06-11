@@ -78,7 +78,7 @@ function create(){
 
 	socket.on("bulletsUpdate", function(bulletsInfo){
 		
-		for(var i=0; i<bulletsInfo.length; i++){
+		for(var i=0; i < bulletsInfo.length; i++){
 			
 			var bullet = bulletsInfo[i];
 
@@ -94,7 +94,7 @@ function create(){
 			}
 		}
 
-		for(var i = bulletsInfo.length; i<bullets.length; i++){
+		for(var i = bulletsInfo.length; i < bullets.length; i++){
 				
 				bullets[i].destroy();
 				bullets.splice(i,1);
@@ -102,6 +102,30 @@ function create(){
 		}
 		
 	});
+
+	socket.on("playerHit", function(id){
+
+		if(id === socket.id){
+
+			ship.damage(1);	
+
+		} else {
+			
+				
+			otherPlayers.forEach(function(otherPlayer){
+						
+				if(otherPlayer.playerId == id){
+
+					otherPlayer.damage(1);
+				}
+
+
+			});
+
+		}
+		
+	});
+			
 }
 
 function update(){
@@ -132,10 +156,10 @@ function update(){
 
 		} 
 
-		if(spaceBar.isDown && !ship.shoot){
+		if(spaceBar.isDown && !ship.shoot && bullets.length < 3){
 				
-			var speed_x = Math.cos(ship.rotation) * 20;
-			var speed_y = Math.sin(ship.rotation) * 20;
+			var speed_x = Math.cos(ship.rotation) * 10;
+			var speed_y = Math.sin(ship.rotation) * 10;
 
 			ship.shoot = true;
 
@@ -179,7 +203,7 @@ function addPlayer(playerInfo) {
 	ship.scale.setTo(0.5, 0.5);
   ship.body.drag.set(100);
   ship.body.maxVelocity.set(200);
-
+	ship.health = 3;
 }
 
 function addOtherPlayers(playerInfo) {
@@ -191,6 +215,7 @@ function addOtherPlayers(playerInfo) {
 	otherPlayer.anchor.set(0.5);
 	otherPlayer.scale.setTo(0.5, 0.5);
 	otherPlayer.playerId = playerInfo.playerId;
+	otherPlayer.health = playerInfo.health;
   otherPlayers.add(otherPlayer);
 }
 

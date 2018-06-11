@@ -58,6 +58,7 @@ io.on("connection", function(socket){
 			bulletInfo.ownerId = socket.id;	
 			bullets.push(bulletInfo);
 		}	
+
 	});
 
 });
@@ -68,7 +69,6 @@ setInterval(function(){
 }, 16)
 
 server.listen(8080, function(){
-
 	console.log("servidor corriendo en el puerto 8080");
 });
 
@@ -83,6 +83,7 @@ function updateBullets(){
 		for( id in players){
 			if(bullet.ownerId != id  && Math.abs(players[id].x - bullet.x) < 21 && Math.abs(players[id].y - bullet.y) < 21){
 				bullets.splice(i,1);	
+				io.emit("playerHit", id)	
 			}
 		}
 
@@ -93,18 +94,6 @@ function updateBullets(){
 	});
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
