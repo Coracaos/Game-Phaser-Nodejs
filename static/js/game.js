@@ -1,12 +1,10 @@
 //iniciamos el juego con una configuracion base
 
-var width = screen.width;
+var width = window.innerWidth;
 
-var height = screen.height*0.9; 
+var height = window.innerHeight; 
 
 var game = new Phaser.Game(width, height, Phaser.AUTO, "myGame", {preload: preload, create: create, update: update, render: render});
-
-console.log(game.width);
 
 var socket;
 var ship;

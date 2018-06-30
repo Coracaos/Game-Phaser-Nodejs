@@ -1,7 +1,11 @@
-var express = require("express"); 
-var app = express();
-var server = require("http").Server(app);
-var io = require("socket.io").listen(server);
+const express = require("express"); 
+const app = express();
+const server = require("http").Server(app);
+const io = require("socket.io").listen(server);
+const path = require("path");
+
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, "/index.html")
 
 //variables ṕara almacenar jugadores y balas 
 var players = {};
@@ -15,7 +19,7 @@ app.use(express.static(__dirname + "/static"));
 
 //creamos una ruta para visualizar el juego
 app.get("/", function(req, res){
-	res.sendFile(__dirname + "/index.html");			
+	res.sendFile(index.html, INDEX);			
 });
 
 //iniciamos el servidor de sockets
@@ -87,7 +91,7 @@ setInterval(function(){
 }, 16)
 
 //corremos el servidor en el puerto 8080
-server.listen(8080, function(){
+server.listen(PORT , function(){
 	console.log("servidor corriendo en el puerto 8080");
 });
 
