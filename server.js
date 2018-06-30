@@ -7,6 +7,9 @@ var io = require("socket.io").listen(server);
 var players = {};
 var bullets = [];
 
+var gameWidth = 0;
+var gameHeight = 0;
+
 //cargar los archivos estaticos
 app.use(express.static(__dirname + "/static"));
 
@@ -36,6 +39,11 @@ io.on("connection",function(socket){
 	//enviar a los demas jugadores mis datos de jugador 
 	socket.broadcast.emit("newPlayer", players[socket.id]);
 
+	socket.on("sizeGame", function(data){
+		gameWidth = data.width;
+		gameHeight = data.height;
+	});
+
 	//detecta cuando un usuario se desconecta
 	socket.on("disconnect", function(){
 
@@ -62,6 +70,7 @@ io.on("connection",function(socket){
 	socket.on("shootBullet", function(bulletInfo){
 
 		if(players[socket.id]){
+
 			//le asignamos el id del jugador al que pertenecen
 			bulletInfo.ownerId = socket.id;	
 			bullets.push(bulletInfo);
@@ -107,18 +116,13 @@ function updateBullets(){
 		}
 
 		//si la bala sale de los limites del area del juego se elimina
-		if(bullet.x < 0 || bullet.x > 800 || bullet.y < 0 || bullet.y > 600){
+		if(bullet.x < 0 || bullet.x > gameWidth || bullet.y < 0 || bullet.y > gameHeight){
 			bullets.splice(i,1);	
 		}
 		
 	});
 
 }
-
-
-
-
-
 
 
 

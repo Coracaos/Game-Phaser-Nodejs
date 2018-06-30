@@ -1,5 +1,12 @@
 //iniciamos el juego con una configuracion base
-var game = new Phaser.Game(800, 600, Phaser.AUTO, "phaser-example", {preload: preload, create: create, update: update, render: render});
+
+var width = screen.width;
+
+var height = screen.height*0.9; 
+
+var game = new Phaser.Game(width, height, Phaser.AUTO, "myGame", {preload: preload, create: create, update: update, render: render});
+
+console.log(game.width);
 
 var socket;
 var ship;
@@ -10,18 +17,24 @@ var bullets = [];
 var bulletsTime = 0;
 var spaceBar;
 
+var heart = "\uf004 "
 
 //todos los recursos que vamos a usar (imagenes)
 function preload(){
 	this.load.image("ship", "assets/ship_blue.png");
 	this.load.image("bullet", "assets/bullet.png");
+	this.load.image("space", "assets/space.png");
 }
+
 
 //creacion de objetos y conexiones con sockets al servidor
 function create(){
 
 	//escogemos la fisica que vamos a usar en el juego
 	game.physics.startSystem(Phaser.Physics.ARCADE);
+
+	//imagen de fondo
+	game.add.tileSprite(0 , 0, game.width, game.height, "space");
 	
 	//creamos un socket para la conexion con el servidor
   socket = io.connect();
@@ -31,6 +44,11 @@ function create(){
 	otherPlayers.enableBody = true;
 	otherPlayers.physicsBodyType = Phaser.Physics.ARCADE;
 
+	game.healthText = game.add.text(15, 15, "\n" + heart.repeat(2) + heart, {font: "20px fontAwesome", fill: "#ff6666"})
+	
+	//enviamos datos del juego
+	socket.emit("sizeGame",{width: window.innerWidth, height: window.innerHeight}) 
+	
 	//recibimos los datos de las usuarios conectados
   socket.on('currentPlayers', function (players) {
 
@@ -65,6 +83,7 @@ function create(){
 		});
 	});
 	
+
 	//teclas de movimiento
 	cursors = game.input.keyboard.createCursorKeys();
 		
@@ -125,6 +144,7 @@ function create(){
 		if(id === socket.id){
 
 			ship.damage(1);	
+			game.healthText.setText("\n" + heart.repeat(ship.health) );
 
 		} else {
 
