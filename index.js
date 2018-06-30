@@ -92,7 +92,7 @@ setInterval(function(){
 
 //corremos el servidor en el puerto 8080
 server.listen(PORT , function(){
-	console.log("servidor corriendo en el puerto 8080");
+	console.log("servidor corriendo en el puerto " + PORT);
 });
 
 //actuliza los datos de las balas 
