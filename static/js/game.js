@@ -1,10 +1,5 @@
 //iniciamos el juego con una configuracion base
-
-var width = window.innerWidth;
-
-var height = window.innerHeight; 
-
-var game = new Phaser.Game(width, height, Phaser.AUTO, "myGame", {preload: preload, create: create, update: update, render: render});
+var game = new Phaser.Game(800, 600, Phaser.AUTO, "myGame", {preload: preload, create: create, update: update});
 
 var socket;
 var ship;
@@ -14,14 +9,21 @@ var speed = 0;
 var bullets = [];
 var bulletsTime = 0;
 var spaceBar;
+var healText;
 
 var heart = "\uf004 "
 
 //todos los recursos que vamos a usar (imagenes)
 function preload(){
-	this.load.image("ship", "assets/ship_blue.png");
+
+	this.load.image("1", "assets/ship_blue.png");
+	this.load.image("2", "assets/ship_orange.png");
+	this.load.image("3", "assets/ship_black.png");
+	this.load.image("4", "assets/ship_green.png");
+
 	this.load.image("bullet", "assets/bullet.png");
 	this.load.image("space", "assets/space.png");
+
 }
 
 
@@ -32,20 +34,26 @@ function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	//imagen de fondo
-	game.add.tileSprite(0 , 0, game.width, game.height, "space");
-	
+	game.add.tileSprite(0, 0, 1600, 1200, 'space');	
+
+	//limites del mundo del juego
+	game.world.setBounds(0, 0, 1600, 1200);
+
 	//creamos un socket para la conexion con el servidor
   socket = io.connect();
+
+	//iniciamos el juego con un menu
 	
 	//grupo que contiene a los otros jugadores
 	otherPlayers = game.add.group();
 	otherPlayers.enableBody = true;
 	otherPlayers.physicsBodyType = Phaser.Physics.ARCADE;
 
-	game.healthText = game.add.text(15, 15, "\n" + heart.repeat(2) + heart, {font: "20px fontAwesome", fill: "#ff6666"})
-	
-	//enviamos datos del juego
-	socket.emit("sizeGame",{width: window.innerWidth, height: window.innerHeight}) 
+	healthText = game.add.text(15, 15, "\n" + heart.repeat(2) + heart, {font: "20px fontAwesome", fill: "#ff6666"})
+
+	healthText.fixedToCamera = true;
+
+	initGameMenu(socket);
 	
 	//recibimos los datos de las usuarios conectados
   socket.on('currentPlayers', function (players) {
@@ -142,7 +150,11 @@ function create(){
 		if(id === socket.id){
 
 			ship.damage(1);	
-			game.healthText.setText("\n" + heart.repeat(ship.health) );
+
+			healthText.setText("\n" + heart.repeat(ship.health) );
+
+			game.camera.flash(0xff6666, 250);
+			game.camera.shake(0.01, 250, true, Phaser.Camera.SHAKE_BOTH, true);
 
 		} else {
 
@@ -153,6 +165,7 @@ function create(){
 				if(otherPlayer.playerId == id){
 
 					otherPlayer.damage(1);
+					
 				}
 
 
@@ -161,22 +174,22 @@ function create(){
 		}
 		
 	});
-			
+
 }
 
 //eventos y animacion del juego
 function update(){
 
 	if (ship && ship.alive) {
-		console.log(ship.alive);	
+
 		//teclas de movimiento de rotacion
 		if (cursors.left.isDown){
 
-			ship.body.angularVelocity = -300;	
+			ship.body.angularVelocity = -250;	
 
 		}	else if (cursors.right.isDown){
 
-			ship.body.angularVelocity = 300;
+			ship.body.angularVelocity = 250;
 
 		} else {
 
@@ -197,7 +210,7 @@ function update(){
 		} 
 		
 		//tecla para disparar
-		if(spaceBar.isDown && !ship.shoot && bullets.length < 3){
+		if(spaceBar.isDown && !ship.shoot && bullets.length < 4){
 				
 			//velocidad del movimiento de la bala
 			var speed_x = Math.cos(ship.rotation) * 10;
@@ -214,7 +227,7 @@ function update(){
 		if(!spaceBar.isDown) ship.shoot = false;
 		
 		//para que la nave no se escape del area de juego y aparezca al lado contrario 
-		game.world.wrap(ship, 5);
+		//game.world.wrap(ship, 5);
 			
 		//enviamos los datos de nuestro movieminto al servidor
 		//si nos estamos movimendo
@@ -238,14 +251,11 @@ function update(){
 	}
 }
 
-function render(){
-
-}
 
 //guardamos los datos del jugador
 function addPlayer(playerInfo) {
 
-  ship = game.add.sprite(playerInfo.x, playerInfo.y, "ship");
+  ship = game.add.sprite(playerInfo.x, playerInfo.y, playerInfo.type);
 		
 	game.physics.enable(ship, Phaser.Physics.ARCADE);
 
@@ -255,12 +265,16 @@ function addPlayer(playerInfo) {
   ship.body.maxVelocity.set(200);
 	ship.alive = true;
 	ship.health = 3;
+
+	ship.body.collideWorldBounds = true;
+
+	game.camera.follow(ship, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 }
 
 //guardamos los datos de los otros jugadores
 function addOtherPlayers(playerInfo) {
 
-  var otherPlayer = game.add.sprite(playerInfo.x, playerInfo.y, "ship")
+  var otherPlayer = game.add.sprite(playerInfo.x, playerInfo.y, playerInfo.type);
 
 	game.physics.enable(otherPlayer, Phaser.Physics.ARCADE);
 	
@@ -272,4 +286,3 @@ function addOtherPlayers(playerInfo) {
   otherPlayers.add(otherPlayer);
 }
 
-		

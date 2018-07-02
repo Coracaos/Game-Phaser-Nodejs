@@ -29,24 +29,25 @@ io.on("connection",function(socket){
 	console.log("nuevo usuario conectado");
 
 	//cuando se conecte un usuario creamos un jugador
-	players[socket.id] = {
-		rotation: 0,		
-		x: Math.floor(Math.random() * 700) + 50,
-		y: Math.floor(Math.random() * 500) + 50,
-		playerId: socket.id,
-		health: 3
-	};
+	socket.on("newPlayer", function(infoPlayer){
 
-	//enviar todos los jugadores al cliente
-	socket.emit("currentPlayers", players);
+		players[socket.id] = {
+			name: infoPlayer.name,
+			type: infoPlayer.type, 
+			rotation: 0,		
+			x: Math.floor(Math.random() * 800) + 400,
+			y: Math.floor(Math.random() * 600) + 300,
+			playerId: socket.id,
+			health: 3
+		};
 
-	//enviar a los demas jugadores mis datos de jugador 
-	socket.broadcast.emit("newPlayer", players[socket.id]);
+		//enviar todos los jugadores al cliente
+		socket.emit("currentPlayers", players);
 
-	socket.on("sizeGame", function(data){
-		gameWidth = data.width;
-		gameHeight = data.height;
+		//enviar a los demas jugadores mis datos de jugador 
+		socket.broadcast.emit("newPlayer", players[socket.id]);
 	});
+
 
 	//detecta cuando un usuario se desconecta
 	socket.on("disconnect", function(){
@@ -112,26 +113,21 @@ function updateBullets(){
 			if(bullet.ownerId != id  && Math.abs(players[id].x - bullet.x) < 21 && Math.abs(players[id].y - bullet.y) < 21){
 				//eliminamos la bala del arreglo
 				bullets.splice(i,1);	
+
 				players[id].health -= 1
-				if (players[id].health < 0) delete players[id];
+
+				if (players[id].health < 1) delete players[id];
+
 				//emitimos un evento con el id del jugador afectado por la bala
 				io.emit("playerHit", id)	
 			}
 		}
 
 		//si la bala sale de los limites del area del juego se elimina
-		if(bullet.x < 0 || bullet.x > gameWidth || bullet.y < 0 || bullet.y > gameHeight){
+		if(bullet.x < 0 || bullet.x > 1600 || bullet.y < 0 || bullet.y > 1200){
 			bullets.splice(i,1);	
 		}
 		
 	});
 
 }
-
-
-
-
-
-
-
-
