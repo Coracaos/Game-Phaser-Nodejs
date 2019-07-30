@@ -27,7 +27,7 @@ Ingresar: http://localhost:3000/
 Deploy heroku
 -------------
 
-  [Puedes probar el juego aquí](https://game-space-war.herokuapp.com/)
+  [Puedes probar el juego aquí](https://game-space-war-v2.herokuapp.com/)
  
 Creditos
 --------
